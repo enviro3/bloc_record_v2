@@ -3,8 +3,8 @@ require 'bloc_record/utility'
 
 module Schema
   def table
-     BlocRecord::Utility.underscore(name)
-   end
+    BlocRecord::Utility.underscore(name)
+  end
 
    def schema
      unless @schema

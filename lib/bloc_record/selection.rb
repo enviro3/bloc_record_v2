@@ -163,16 +163,27 @@ module Selection
    end
 
    def order(*args)
-     if args.count > 1
-       order = args.join(",")
-     else
-       order = args.first.to_s
-     end
-
-     rows = connection.execute <<-SQL
-       SELECT * FROM #{table}
-       ORDER BY #{order};
+     orderedArray = []
+     args.each {|arg|
+       case arg
+       when String
+         orderedArray.push(arg)
+       when Symbol
+         orderedArray.push(arg.to_s)
+       when Hash
+         expression_hash = BlocRecord::Utility.convert_keys(arg)
+         expression = expression_hash.map {
+           |key, value| "#{key} #{value}"
+         }.join(", ")
+         orderedArray.push(expression)
+       end
+     }
+     sql = <<-SQL
+       SELECT #{columns.join ","} FROM #{table}
+       WHERE #{orderedArray.join ", "};
      SQL
+
+     rows = connection.execute(sql, params)
      rows_to_array(rows)
    end
 
@@ -193,6 +204,18 @@ module Selection
            SELECT * FROM #{table}
            INNER JOIN #{args.first} ON #{args.first}.#{table}_id = #{table}.id
          SQL
+       when Hash
+
+         expression = args.first.map {
+           |key, value| "
+            INNER JOIN #{key.to_s} ON #{key.to_s}.#{table}_id = #{table}.id
+            INNER JOIN #{value.to_s} ON #{value.to_s}.#{key.to_s}_id = #{key.to_s}.id
+          "
+         }.join(" ")
+         rows = connection.execute <<-SQL
+           SELECT * FROM #{table}
+           #{expression}
+         SQL
        end
      end
 
@@ -201,6 +224,7 @@ module Selection
 
 
   private
+
   def init_object_from_row(row)
     if row
       data = Hash[columns.zip(row)]
