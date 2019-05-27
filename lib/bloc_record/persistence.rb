@@ -57,6 +57,16 @@ module Persistence
      end
 
      def update(ids, updates)
+       if updates.class == Array
+        ids_paired_with_updates = ids.zip(updates)
+        ids_paired_with_updates.map do |id_update_pair|
+          id = id_update_pair[0]
+          the_update = id_update_pair[1]
+          self.update(id, the_update)
+        end
+        return
+       end
+
        updates = BlocRecord::Utility.convert_keys(updates)
        updates.delete "id"
        updates_array = updates.map { |key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}" }

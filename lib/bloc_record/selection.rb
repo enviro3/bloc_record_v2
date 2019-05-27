@@ -3,8 +3,17 @@ require 'sqlite3'
 module Selection
   def method_missing(method_name, *arguments)
     method_name = method_name.to_s
+    if method_name.start_with?("update_")
+        column_they_hope_exists = method_name["update_".length.method_name.length]
+        if self.class.columns.any? {|column| column === column_they_hope_exists}
+          update(column_they_hope_exists, *arguments)
+        else
+          puts "Cannot do update on non-existant column #{column_they_hope_exists}"
+        end
+    end
+
     if method_name.start_with?("find_by_")
-      column_they_hope_exists = method_name["find_by_".length..method_name.length]
+      column_they_hope_exists = method_name["find_by_".length.method_name.length]
       if self.class.columns.any? {|column| column === column_they_hope_exists}
         find_by(column_they_hope_exists, *arguments)
       else
