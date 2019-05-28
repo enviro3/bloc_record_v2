@@ -2,8 +2,7 @@ module BlocRecord
   class Collection < Array
 
     def update_all(updates)
-      ids = self.map(&:id)
-
+      ids = self.map {|item| item.id}
       self.any? ? self.first.class.update(ids, updates) : false
     end
 
@@ -43,4 +42,11 @@ module BlocRecord
       end
       return self.to_collection(arr)
     end
+
+
+    def destroy_all()
+      ids = self.map {|item| item.id}
+      self.any? ? self.first.class.destroy_all(ids.unshift("id = ?")) : false
+    end
+  end
 end
