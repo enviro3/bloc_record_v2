@@ -111,15 +111,15 @@ module Persistence
           DELETE FROM #{table}
         SQL
         return
-      end
-      if conditions.is_a? String
+
+      elsif conditions.is_a? String
         connection.execute <<-SQL
           DELETE FROM #{table}
           WHERE #{conditions};
         SQL
         return
-      end
-      if conditions.is_a? Array
+
+      elsif conditions.is_a? Array
         expression = args.shift
         params = args
         sql = <<-SQL
@@ -128,8 +128,8 @@ module Persistence
         SQL
         connection.execute(sql, params)
         return
-      end
-      if conditions.is_a? Hash
+
+      elsif conditions.is_a? Hash
         conditions_hash = BlocRecord::Utility.convert_keys(conditions_hash)
         conditions = conditions_hash.map {|key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}"}.join(" and ")
 
