@@ -1,4 +1,5 @@
 require 'sqlite3'
+require 'pg'
 
 module Selection
   def method_missing(method_name, *arguments)

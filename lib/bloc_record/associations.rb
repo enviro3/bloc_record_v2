@@ -1,4 +1,5 @@
 require 'sqlite3'
+require 'pg'
 require 'active_support/inflector'
 
 module Associations
@@ -19,6 +20,24 @@ module Associations
 
        collection
      end
+  end
+
+  def has_one(association)
+    define_method(association) do
+
+      rows = self.class.connection.execute <<-SQL
+        SELECT * FROM #{association.to_s.singularize}
+        WHERE #{self.class.table}_id = #{self.id}
+      SQL
+
+      class_name = association.to_s.classify.constantize
+
+      if rows.length > 1
+        raise 'an error has occurred due to multiple entries match'
+      end
+
+      return class_name.new(Hash[class_name.columns.zip(rows[0])]]
+    end
   end
 
   def belongs_to(association)
